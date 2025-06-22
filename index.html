@@ -188,6 +188,7 @@
         let gamePaused = false;
         let score = 0;
         let gameInterval;
+        let audioCtx; // For Web Audio API
 
         // Initialize the game board
         function initializeBoard() {
@@ -297,7 +298,7 @@
                 score += 10;
                 scoreElement.textContent = score;
                 generateFood();
-                // Play eating sound effect (placeholder)
+                // Play eating sound effect
                 playSound('eat');
             } else {
                 snake.pop();
@@ -316,7 +317,7 @@
             gameRunning = false;
             finalScoreElement.textContent = score;
             gameOverElement.style.display = 'block';
-            // Play game over sound effect (placeholder)
+            // Play game over sound effect
             playSound('gameOver');
         }
 
@@ -324,12 +325,51 @@
         function startGame() {
             if (gameRunning) return;
             
+            initAudio(); // Initialize audio on user action
             gameRunning = true;
             gamePaused = false;
             gameOverElement.style.display = 'none';
             pausedElement.style.display = 'none';
             
             gameInterval = setInterval(moveSnake, 150);
+        }
+
+        // Initialize Web Audio API
+        function initAudio() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error("Web Audio API is not supported in this browser.");
+                }
+            }
+        }
+
+        // Play sound effects
+        function playSound(type) {
+            if (!audioCtx) return;
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+
+            if (type === 'eat') {
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'gameOver') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // Low pitch
+                oscillator.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.5); // Descending
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            }
         }
 
         // Pause game
@@ -355,12 +395,6 @@
             gameOverElement.style.display = 'none';
             pausedElement.style.display = 'none';
             initializeGame();
-        }
-
-        // Play sound effects (placeholder)
-        function playSound(type) {
-            // In a real implementation, you would play actual audio files
-            console.log(`Playing ${type} sound`);
         }
 
         // Keyboard controls
