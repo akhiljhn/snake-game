@@ -47,21 +47,13 @@
         }
 
         .game-board {
-            border: 1px solid #00ffff;
-            background-color: #333;
+            border: 2px solid #00ffff;
+            background-color: #000;
             display: grid;
             grid-template-columns: repeat(18, 20px);
             grid-template-rows: repeat(18, 20px);
-            gap: 0;
+            gap: 1px;
             margin-bottom: 20px;
-        }
-
-        .grid-cell {
-            width: 20px;
-            height: 20px;
-            background-color: #000;
-            border-right: 1px solid #333;
-            border-bottom: 1px solid #333;
         }
 
         .snake-segment {
@@ -203,7 +195,8 @@
             board.innerHTML = '';
             for (let i = 0; i < boardSize * boardSize; i++) {
                 const cell = document.createElement('div');
-                cell.classList.add('grid-cell');
+                cell.style.width = '20px';
+                cell.style.height = '20px';
                 board.appendChild(cell);
             }
         }
